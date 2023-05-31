@@ -70,7 +70,7 @@ float LinearizeDepth(float depth)
 vec3 CalcDirLight(Light light, vec3 normal, vec3 viewDir, vec3 albedo, float specular, float shininess);
 vec3 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 albedo, float specular, float shininess);
 vec3 CalcSpotLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 albedo, float specular, float shininess);
-
+vec3 ApplyToneMapping(vec3 color);
 void main()
 {
     // retrieve data from G-buffer
@@ -88,6 +88,9 @@ void main()
     vec3 viewDir = normalize(uCameraPosition - FragPos);
 
     vec3 result = vec3(0.0); // define an output color value
+      //HDR
+    Albedo = ApplyToneMapping(Albedo);
+
     switch (renderMode)
     {
         default:
@@ -111,6 +114,18 @@ void main()
     }
 
     oColor = vec4(result, 1.0);
+    
+    //Bloom effect
+    // float brightness = dot(oColor.rgb,vec3(0.2126,0.7152,0.0722));
+}
+
+vec3 ApplyToneMapping(vec3 color){
+    const float exposure = 0.1;
+    const float gamma = 2.2;
+    //exposure tone mapping
+    vec3 mapped = vec3(1.0) - exp(-color * exposure);
+    //gamma correction
+    return pow(mapped,vec3(1.0/gamma));
 }
 
 vec3 CalcDirLight(Light light, vec3 normal, vec3 viewDir, vec3 Albedo, float Specular, float shininess)

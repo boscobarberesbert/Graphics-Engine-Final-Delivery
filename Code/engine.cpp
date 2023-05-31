@@ -392,7 +392,7 @@ void GenerateFramebuffer(App* app)
     // color + specular color buffer
     glGenTextures(1, &app->framebufferHandles.gAlbedoSpec);
     glBindTexture(GL_TEXTURE_2D, app->framebufferHandles.gAlbedoSpec);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, app->displaySize.x, app->displaySize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, app->displaySize.x, app->displaySize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
@@ -671,7 +671,7 @@ void Init(App* app)
     //CreateEntity(app, Primitive(app->materialIndexes["sci-fi wall"], app->modelIndexes["sphere"], app->programIndexes["shaders3"], vec3(2.5f), vec3(0.0f), vec3(0.125f)));
 
     CreateLightSource(app, Light(LightType_Point));
-    CreateLightSource(app, Light(LightType_Point, vec3(1.0f), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 5.0f, 0.0f)));
+    CreateLightSource(app, Light(LightType_Point, vec3(0.0f,0.0f,0.0f), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 5.0f, 0.0f),vec3(0.2f),vec3(1.0f,1.0f,1.0f)));
     CreateLightSource(app, Light(LightType_Point, vec3(1.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, -5.0f, 0.0f)));
     CreateLightSource(app, Light(LightType_Directional, vec3(1.0f, 0.65f, 0.0f), vec3(1.0f), vec3(-5.0f), vec3(0.2f), vec3(1.0f, 0.65f, 0.0f), vec3(1.0f)));
     CreateLightSource(app, Light(LightType_Directional, vec3(0.25f, 0.88f, 0.82f), vec3(-1.0f), vec3(5.0f), vec3(0.2f), vec3(0.25f, 0.88f, 0.82f), vec3(1.0f)));
