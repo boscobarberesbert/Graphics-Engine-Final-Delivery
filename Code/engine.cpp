@@ -780,10 +780,10 @@ void Init(App* app)
 	//CreateLightSource(app, Light(LightType_Point));
 	//CreateLightSource(app, Light(LightType_Point, vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 5.0f, 0.0f), vec3(0.2f), vec3(1.0f, 1.0f, 1.0f)));
 	//CreateLightSource(app, Light(LightType_Point, vec3(1.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, -5.0f, 0.0f)));
-	//CreateLightSource(app, Light(LightType_Directional, vec3(1.0f, 0.65f, 0.0f), vec3(1.0f), vec3(-5.0f), vec3(0.2f), vec3(1.0f, 0.65f, 0.0f), vec3(1.0f)));
+	CreateLightSource(app, Light(LightType_Directional, vec3(1.0f, 0.65f, 0.0f), vec3(1.0f), vec3(-5.0f), vec3(0.2f), vec3(1.0f, 0.65f, 0.0f), vec3(1.0f)));
 	//CreateLightSource(app, Light(LightType_Directional, vec3(0.25f, 0.88f, 0.82f), vec3(-1.0f), vec3(5.0f), vec3(0.2f), vec3(0.25f, 0.88f, 0.82f), vec3(1.0f)));
-	//CreateLightSource(app, Light(LightType_Flash, vec3(1.0f), vec3(0.0f), vec3(0.0f), vec3(0.2f), vec3(1.0f), vec3(1.0f)));
-	CreateLightSource(app, Light(LightType_Point, vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 5.0f, -10.0f), vec3(0.2f), vec3(1.0f, 0.0f, 0.0f)));
+	CreateLightSource(app, Light(LightType_Flash, vec3(1.0f), vec3(0.0f), vec3(0.0f), vec3(0.2f), vec3(1.0f), vec3(1.0f)));
+	CreateLightSource(app, Light(LightType_Point, vec3(50.0f, 25.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 5.0f, -10.0f), vec3(0.2f), vec3(50.0f, 25.0f, 0.0f)));
 
 }
 
@@ -860,18 +860,18 @@ void Update(App* app)
 	ProcessInput(app, glfwGetCurrentContext());
 
 	// Move the light source around the scene over time
-	//app->lights[0].position.x = sin(glfwGetTime()) * 5.0f;
-	//app->lights[0].position.y = sin(glfwGetTime() / 2) * 5.0f;
-	//app->entities[9].worldMatrix = glm::translate(mat4(1.0f), app->lights[0].position);
-	//app->entities[9].worldMatrix = glm::scale(app->entities[9].worldMatrix, vec3(0.025f));
+	/*app->lights[0].position.x = sin(glfwGetTime()) * 5.0f;
+	app->lights[0].position.y = sin(glfwGetTime() / 2) * 5.0f;
+	app->entities[9].worldMatrix = glm::translate(mat4(1.0f), app->lights[0].position);
+	app->entities[9].worldMatrix = glm::scale(app->entities[9].worldMatrix, vec3(0.025f));*/
 
-	//// Change the light's colors over time by changing the light's ambient and diffuse colors
+	// Change the light's colors over time by changing the light's ambient and diffuse colors
 	//app->lights[0].color.x = sin(glfwGetTime() * 2.0f);
 	//app->lights[0].color.y = sin(glfwGetTime() * 0.7f);
 	//app->lights[0].color.z = sin(glfwGetTime() * 1.3f);
 
-	app->lights[0].diffuse = app->lights[0].color * glm::vec3(100.0f);
-	app->lights[0].ambient = app->lights[0].diffuse * glm::vec3(0.2f);
+	/*app->lights[0].diffuse = app->lights[0].color * glm::vec3(50.0f);
+	app->lights[0].ambient = app->lights[0].diffuse * glm::vec3(0.2f);*/
 
 	// View matrix
 	mat4 view;
@@ -1242,7 +1242,7 @@ void Render(App* app)
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, app->pingPongHandles.colorBuffer[!horizontal]);
 
-		glUniform1f(glGetUniformLocation(bloomProgram.handle, "exposure"), 0.1);
+		glUniform1f(glGetUniformLocation(bloomProgram.handle, "exposure"), 1 );
 
 		RenderQuad(app);
 		//Forward shading
