@@ -40,6 +40,7 @@ struct Light
 
 // TODO: Write your fragment shader here
 layout(location = 0) out vec4 oColor;
+layout(location = 1) out vec4 bColor;
 
 in vec2 vTexCoord;
 
@@ -71,6 +72,7 @@ vec3 CalcDirLight(Light light, vec3 normal, vec3 viewDir, vec3 albedo, float spe
 vec3 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 albedo, float specular, float shininess);
 vec3 CalcSpotLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 albedo, float specular, float shininess);
 vec3 ApplyToneMapping(vec3 color);
+vec4 ApplyBloom(vec4 oColor);
 void main()
 {
     // retrieve data from G-buffer
@@ -116,7 +118,15 @@ void main()
     oColor = vec4(result, 1.0);
     
     //Bloom effect
-    // float brightness = dot(oColor.rgb,vec3(0.2126,0.7152,0.0722));
+    bColor = ApplyBloom(oColor);
+}
+
+vec4 ApplyBloom(vec4 oColor){
+float brightness = dot(oColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+    if(brightness > 1.0)
+        return vec4(oColor.rgb, 1.0);
+    else
+        return vec4(0.0, 0.0, 0.0, 1.0);
 }
 
 vec3 ApplyToneMapping(vec3 color){

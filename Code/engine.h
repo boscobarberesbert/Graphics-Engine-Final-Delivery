@@ -287,6 +287,15 @@ struct Buffer
     void* data; // mapped data
 };
 
+struct Buffer2D
+{
+    GLuint handle[2];
+    GLenum type;
+    u32    size;
+    u32    head;
+    void* data; // mapped data
+};
+
 enum LightType
 {
     LightType_Directional,
@@ -342,6 +351,11 @@ struct Framebuffer
     unsigned int gNormal;
     unsigned int gAlbedoSpec;
     unsigned int gDepth;
+};
+
+struct Framebuffer2D
+{
+    unsigned int colorBuffer[2];
 };
 
 enum RenderMode
@@ -422,6 +436,8 @@ struct App
 
     Buffer cbuffer;
     Buffer gBuffer;
+    Buffer deferredBuffer;
+    Buffer2D pingPongBuffer;
 
     // Global params
     u32 globalParamsOffset;
@@ -445,6 +461,8 @@ struct App
 
     // Framebuffer object handles
     Framebuffer framebufferHandles;
+    Framebuffer2D deferredHandles;
+    Framebuffer2D pingPongHandles;
 };
 
 void Init(App* app);
