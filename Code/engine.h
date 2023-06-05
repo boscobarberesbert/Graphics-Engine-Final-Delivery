@@ -437,6 +437,7 @@ struct App
     Buffer cbuffer;
     Buffer gBuffer;
     Buffer deferredBuffer;
+    Buffer lightsBuffer;
     Buffer2D pingPongBuffer;
 
     // Global params
@@ -462,6 +463,7 @@ struct App
     // Framebuffer object handles
     Framebuffer framebufferHandles;
     Framebuffer2D deferredHandles;
+    Framebuffer lightsHandles;
     Framebuffer2D pingPongHandles;
 };
 

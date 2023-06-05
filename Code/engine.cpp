@@ -483,6 +483,54 @@ void GenerateDeferredFBO(App* app)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void GenerateLightFBO(App* app) {
+	// Framebuffer
+   // Creation and configuration of textures
+
+
+	// color + specular color buffer
+	glGenTextures(1, &app->lightsHandles.gAlbedoSpec);
+	glBindTexture(GL_TEXTURE_2D, app->lightsHandles.gAlbedoSpec);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, app->displaySize.x, app->displaySize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+
+
+	// Creation and configuration of a framebuffer object
+	glGenFramebuffers(1, &app->lightsBuffer.handle);
+	glBindFramebuffer(GL_FRAMEBUFFER, app->lightsBuffer.handle);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, app->lightsHandles.gAlbedoSpec, 0);
+
+	// Checking the status of a framebuffer object
+	// finally check if framebuffer is complete
+	GLenum framebufferStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (framebufferStatus != GL_FRAMEBUFFER_COMPLETE)
+	{
+		switch (framebufferStatus)
+		{
+		case GL_FRAMEBUFFER_UNDEFINED:                     ELOG("GL_FRAMEBUFFER_UNDEFINED"); break;
+		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:         ELOG("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT"); break;
+		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: ELOG("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT"); break;
+		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:        ELOG("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER"); break;
+		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:        ELOG("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER"); break;
+		case GL_FRAMEBUFFER_UNSUPPORTED:                   ELOG("GL_FRAMEBUFFER_UNSUPPORTED"); break;
+		case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:        ELOG("GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE"); break;
+		case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:      ELOG("GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS"); break;
+		default: ELOG("Unknown framebuffer status error");
+		}
+	}
+
+	// tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
+	unsigned int attachments[1] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, attachments);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void GeneratePingPongFBO(App* app)
 {
 	// Creation and configuration of a framebuffer object
@@ -530,6 +578,7 @@ void GenerateFramebuffer(App* app)
 {
 	GenerateGFBO(app);
 	GenerateDeferredFBO(app);
+	GenerateLightFBO(app);
 	GeneratePingPongFBO(app);
 }
 
@@ -708,7 +757,7 @@ void Init(App* app)
 
 
 	// Bloom programs
-	u32 bloomProgramIdx = LoadProgram(app, "bloom_shader.glsl", "BLOOM");
+	u32 bloomProgramIdx = LoadProgram(app, "bloom_shader.glsl", "FINAL_BLOOM");
 	app->programIndexes.insert(std::make_pair("bloom", bloomProgramIdx));
 	Program& bloomShadingProgram = app->programs[bloomProgramIdx];
 	glUseProgram(bloomShadingProgram.handle);
@@ -777,13 +826,9 @@ void Init(App* app)
 	CreateEntity(app, TexturedMesh(app->modelIndexes["backpack"], app->programIndexes["g buffer"], vec3(5.0f, 0.0f, 5.0f)));
 	//CreateEntity(app, Primitive(app->materialIndexes["sci-fi wall"], app->modelIndexes["sphere"], app->programIndexes["shaders3"], vec3(2.5f), vec3(0.0f), vec3(0.125f)));
 
-	//CreateLightSource(app, Light(LightType_Point));
-	//CreateLightSource(app, Light(LightType_Point, vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 5.0f, 0.0f), vec3(0.2f), vec3(1.0f, 1.0f, 1.0f)));
-	//CreateLightSource(app, Light(LightType_Point, vec3(1.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, -5.0f, 0.0f)));
-	CreateLightSource(app, Light(LightType_Directional, vec3(1.0f, 0.65f, 0.0f), vec3(1.0f), vec3(-5.0f), vec3(0.2f), vec3(1.0f, 0.65f, 0.0f), vec3(1.0f)));
-	//CreateLightSource(app, Light(LightType_Directional, vec3(0.25f, 0.88f, 0.82f), vec3(-1.0f), vec3(5.0f), vec3(0.2f), vec3(0.25f, 0.88f, 0.82f), vec3(1.0f)));
+	CreateLightSource(app, Light(LightType_Directional, vec3(1.0f), vec3(1.0f), vec3(-5.0f), vec3(0.2f), vec3(1.0f, 0.65f, 0.0f), vec3(1.0f)));
+	CreateLightSource(app, Light(LightType_Point, vec3(50.0f, 32.5f, 0.0f), vec3(1.0f), vec3(0.0f, 5.0f, 0.0f), vec3(0.2f), vec3(50.0f, 25.0f, 0.0f), vec3(1.0f)));
 	CreateLightSource(app, Light(LightType_Flash, vec3(1.0f), vec3(0.0f), vec3(0.0f), vec3(0.2f), vec3(1.0f), vec3(1.0f)));
-	CreateLightSource(app, Light(LightType_Point, vec3(50.0f, 25.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 5.0f, -10.0f), vec3(0.2f), vec3(50.0f, 25.0f, 0.0f)));
 
 }
 
@@ -1134,6 +1179,10 @@ void Render(App* app)
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		// Enable depth test
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+		glDepthMask(GL_TRUE);
 		// Bind the buffer range with the global parameters (camera position, lights...) to the GlobalParams block in the shader
 		glBindBufferRange(GL_UNIFORM_BUFFER, BINDING(0), app->cbuffer.handle, app->globalParamsOffset, app->globalParamsSize);
 
@@ -1194,12 +1243,15 @@ void Render(App* app)
 				}
 			}
 		}
-		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+
+
 
 		// 2. lighting pass: calculate lighting by iterating over a screen filled quad pixel-by-pixel using the gbuffer's content.
 		// Render on screen again (using the rendered texture)
 		glDisable(GL_DEPTH_TEST); // Since we are rendering a texture on a plane, we don't need to calculate the depth test
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, app->framebufferHandles.gPosition);
 		glActiveTexture(GL_TEXTURE1);
@@ -1214,9 +1266,11 @@ void Render(App* app)
 		// finally render quad
 		RenderQuad(app);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// 3. gaussian blur pass.
+
+		
+
+		// 4. gaussian blur pass.
 		Program& gaussianBlurProgram = app->programs[app->programIndexes["gaussian blur"]];
 		glUseProgram(gaussianBlurProgram.handle);
 		bool horizontal = true, first_iteration = true;
@@ -1233,7 +1287,10 @@ void Render(App* app)
 				first_iteration = false;
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		//4. final bloom pass
+
+
+
+		//5. final bloom pass
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		Program& bloomProgram = app->programs[app->programIndexes["bloom"]];
 		glUseProgram(bloomProgram.handle);
@@ -1242,20 +1299,21 @@ void Render(App* app)
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, app->pingPongHandles.colorBuffer[!horizontal]);
 
-		glUniform1f(glGetUniformLocation(bloomProgram.handle, "exposure"), 1 );
+		glUniform1f(glGetUniformLocation(bloomProgram.handle, "exposure"), 1);
 
 		RenderQuad(app);
-		//Forward shading
-		glEnable(GL_DEPTH_TEST);
 
-		//// Combining deferred rendering with forward rendering
-		//// Here we copy the entire read framebuffer's depth buffer content to the default framebuffer's
-		//// depth buffer; this can similarly be done for color buffers and stencil buffers.
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, app->gBuffer.handle);
+		//3. render lights on top of scene
+		// now render all light entitiesaa with forward rendering as we'd normally do
+		glEnable(GL_DEPTH_TEST);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // write to default framebuffer
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, app->gBuffer.handle);
 		glBlitFramebuffer(0, 0, app->displaySize.x, app->displaySize.y, 0, 0, app->displaySize.x, app->displaySize.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+
+
+		glDepthMask(GL_FALSE);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		//// now render all light entitiesaa with forward rendering as we'd normally do
 		u32 lightIndex = 0;
 		for (u16 i = 0; i < app->entities.size(); ++i)
 		{
@@ -1278,7 +1336,6 @@ void Render(App* app)
 					glBindVertexArray(vao);
 
 					glUniform3fv(glGetUniformLocation(lightSourceProgram.handle, "uLightColor"), 1, glm::value_ptr(app->lights[lightIndex].color));
-
 					Submesh& submesh = mesh.submeshes[i];
 					glDrawElements(GL_TRIANGLES, submesh.indices.size(), GL_UNSIGNED_INT, (void*)(u64)submesh.indexOffset);
 				}
@@ -1286,6 +1343,10 @@ void Render(App* app)
 				++lightIndex;
 			}
 		}
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glDepthMask(GL_TRUE);
+
+
 
 	}
 	break;

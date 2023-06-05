@@ -113,7 +113,6 @@ void main()
     }
 
     oColor = vec4(result, 1.0);
-    
     //Bloom effect
     bColor = ApplyBloom(oColor);
 }
