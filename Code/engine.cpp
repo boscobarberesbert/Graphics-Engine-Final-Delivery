@@ -1616,16 +1616,6 @@ void Render(App* app)
 
 		// Render final water plane
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-		GetFinalSceneColor(app);
-
-		// Render final water plane
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glUseProgram(finalSceneProgram.handle);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, app->finalSceneHandles.gAlbedoSpec);
-		RenderQuad(app);
-
 		Program& waterProgram = app->programs[app->programIndexes["water"]];
 		glUseProgram(waterProgram.handle);
 		glActiveTexture(GL_TEXTURE0);
