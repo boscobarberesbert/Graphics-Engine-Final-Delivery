@@ -8,7 +8,7 @@ In this final delivery we have implemented a Multipass Bloom shader with HDR and
 ### Scene With Water Plane + Bloom + HDR:
 ![Water Shader](https://github.com/boscobarberesbert/Graphics-Engine-Final-Delivery/assets/46872250/4a540ddd-5f8b-4724-b6f4-f8271e19efcc)
 
-To change between bloom and water shader you can click a checkbox under view->effects. 
+To change between bloom and water shader you can click a checkbox under effects->Switch to water plane scene. 
 ![Checkbox](https://github.com/boscobarberesbert/Graphics-Engine-Final-Delivery/assets/46872250/339a9690-6009-42fb-9290-c3a8e85b4954)
 
 For the bloom effect the shader files are:
