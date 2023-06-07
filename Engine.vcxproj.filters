@@ -148,5 +148,23 @@
     <None Include="WorkingDir\deferred_shading.glsl">
       <Filter>Shaders\Deferred Shading</Filter>
     </None>
+    <None Include="WorkingDir\reflection.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="WorkingDir\gaussian_blur.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="WorkingDir\bloom_shader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="WorkingDir\final_scene.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="WorkingDir\water.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="WorkingDir\compound_image.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

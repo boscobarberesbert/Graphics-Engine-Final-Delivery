@@ -439,6 +439,10 @@ struct App
     Buffer deferredBuffer;
     Buffer lightsBuffer;
     Buffer2D pingPongBuffer;
+    Buffer finalSceneBuffer;
+    Buffer waterReflectionBuffer;
+    Buffer waterRefractionBuffer;
+    Buffer waterPlaneBuffer;
 
     // Global params
     u32 globalParamsOffset;
@@ -465,6 +469,15 @@ struct App
     Framebuffer2D deferredHandles;
     Framebuffer lightsHandles;
     Framebuffer2D pingPongHandles;
+    Framebuffer finalSceneHandles;
+    Framebuffer waterReflectionHandles;
+    Framebuffer waterRefractionHandles;
+    Framebuffer waterPlaneHandles;
+
+    vec4 clipPlane;
+    Entity waterPlane;
+    u32 waterDUDV;
+    float moveFactor = 0.0f;
 };
 
 void Init(App* app);

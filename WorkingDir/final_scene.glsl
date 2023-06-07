@@ -1,12 +1,19 @@
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
-#ifdef FINAL_BLOOM
+#ifdef FINAL_SCENE
 
 #if defined(VERTEX) ///////////////////////////////////////////////////
 
 layout(location = 0) in vec3 aPosition;
 layout(location = 1) in vec2 aTexCoord;
+
+layout(binding = 1, std140) uniform LocalParams
+{
+    mat4 uWorldMatrix;
+    mat4 uWorldViewProjectionMatrix;
+};
+
 out vec2 vTexCoord;
 
 void main()
@@ -18,25 +25,16 @@ void main()
 #elif defined(FRAGMENT) ///////////////////////////////////////////////
 
 layout(location = 0) out vec4 oColor;
-  
+
 in vec2 vTexCoord;
 
-uniform sampler2D scene;
-uniform sampler2D bloomBlur;
-uniform float exposure;
+uniform sampler2D finalScene;
 
 void main()
-{             
-    const float gamma = 2.2;
-    vec3 hdrColor = texture(scene, vTexCoord).rgb;      
-    vec3 bloomColor = texture(bloomBlur, vTexCoord).rgb;
-    hdrColor += bloomColor; // additive blending
-    // tone mapping
-    vec3 result = vec3(1.0) - exp(-hdrColor * exposure);
-    // also gamma correct while we're at it       
-    result = pow(result, vec3(1.0 / gamma));
+{
+    vec3 result = texture(finalScene, vTexCoord).rgb;
     oColor = vec4(result, 1.0);
-}  
+}
 
 #endif
 #endif

@@ -21,12 +21,17 @@ out vec2 vTexCoord;
 out vec3 vPosition; // In worldspace
 out vec3 vNormal;   // In worldspace
 
+uniform vec4 plane;
+
 void main()
 {
     vTexCoord = aTexCoord;
     vPosition = vec3(uWorldMatrix * vec4(aPosition, 1.0));
     vNormal   = mat3(transpose(inverse(uWorldMatrix))) * aNormal; // TODO: Calculate the normal matrix on the CPU and send it to the shaders via a uniform before drawing (just like the model matrix)
     gl_Position = uWorldViewProjectionMatrix * vec4(aPosition, 1.0);
+
+    vec4 worldPosition = uWorldMatrix * vec4(aPosition, 1.0);
+    gl_ClipDistance[0] = dot(worldPosition, plane);
 }
 
 #elif defined(FRAGMENT) ///////////////////////////////////////////////

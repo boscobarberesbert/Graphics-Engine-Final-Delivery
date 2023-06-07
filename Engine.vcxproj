@@ -55,12 +55,18 @@
     <ClInclude Include="ThirdParty\stb\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="WorkingDir\bloom_shader.glsl" />
+    <None Include="WorkingDir\compound_image.glsl" />
+    <None Include="WorkingDir\final_scene.glsl" />
+    <None Include="WorkingDir\gaussian_blur.glsl" />
     <None Include="WorkingDir\g_buffer.glsl" />
     <None Include="WorkingDir\deferred_shading.glsl" />
     <None Include="WorkingDir\light_source.glsl" />
     <None Include="WorkingDir\shaders.glsl" />
     <None Include="WorkingDir\shaders2.glsl" />
     <None Include="WorkingDir\shaders3.glsl" />
+    <None Include="WorkingDir\reflection.glsl" />
+    <None Include="WorkingDir\water.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -131,6 +131,18 @@ public:
             zoom = 45.0f;
     }
 
+    void ChangeYaw(float newYaw)
+    {
+        this->yaw = newYaw;
+        updateCameraVectors();
+    }
+
+    void ChangePitch(float newPitch)
+    {
+        this->pitch = newPitch;
+        updateCameraVectors();
+    }
+
 private:
     // calculates the front vector from the Camera's (updated) Euler Angles
     void updateCameraVectors()

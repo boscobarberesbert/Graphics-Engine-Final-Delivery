@@ -364,8 +364,8 @@ mat4 TransformPositionScale(const vec3& pos, const vec3& scaleFactors)
 void GenerateGFBO(App* app)
 {
 	// Framebuffer
-   // Creation and configuration of textures
-   // position + depth color buffer
+	// Creation and configuration of textures
+	// position + depth color buffer
 	glGenTextures(1, &app->framebufferHandles.gPosition);
 	glBindTexture(GL_TEXTURE_2D, app->framebufferHandles.gPosition);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, app->displaySize.x, app->displaySize.y, 0, GL_RGBA, GL_FLOAT, NULL);
@@ -460,8 +460,9 @@ void GenerateDeferredFBO(App* app)
 		// attach texture to framebuffer
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, app->deferredHandles.colorBuffer[i], 0);
 	}
+
 	// Checking the status of a framebuffer object
-   // finally check if framebuffer is complete
+	// finally check if framebuffer is complete
 	GLenum framebufferStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (framebufferStatus != GL_FRAMEBUFFER_COMPLETE)
 	{
@@ -478,16 +479,17 @@ void GenerateDeferredFBO(App* app)
 		default: ELOG("Unknown framebuffer status error");
 		}
 	}
+
+	// tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
 	unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 	glDrawBuffers(2, attachments);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void GenerateLightFBO(App* app) {
+void GenerateLightFBO(App* app)
+{
 	// Framebuffer
-   // Creation and configuration of textures
-
-
+	// Creation and configuration of textures
 	// color + specular color buffer
 	glGenTextures(1, &app->lightsHandles.gAlbedoSpec);
 	glBindTexture(GL_TEXTURE_2D, app->lightsHandles.gAlbedoSpec);
@@ -498,8 +500,6 @@ void GenerateLightFBO(App* app) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glBindTexture(GL_TEXTURE_2D, 0);
-
-
 
 	// Creation and configuration of a framebuffer object
 	glGenFramebuffers(1, &app->lightsBuffer.handle);
@@ -543,14 +543,15 @@ void GeneratePingPongFBO(App* app)
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, app->displaySize.x, app->displaySize.y, 0, GL_RGBA, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, app->pingPongHandles.colorBuffer[i], 0);
-
 	}
+
 	// Checking the status of a framebuffer object
-  // finally check if framebuffer is complete
+	// finally check if framebuffer is complete
 	GLenum framebufferStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (framebufferStatus != GL_FRAMEBUFFER_COMPLETE)
 	{
@@ -568,9 +569,178 @@ void GeneratePingPongFBO(App* app)
 		}
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 }
 
+void GenerateFinalSceneFBO(App* app)
+{
+	// Framebuffer
+	// Creation and configuration of textures
+	// color + specular color buffer
+	glGenTextures(1, &app->finalSceneHandles.gAlbedoSpec);
+	glBindTexture(GL_TEXTURE_2D, app->finalSceneHandles.gAlbedoSpec);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, app->displaySize.x, app->displaySize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// Creation and configuration of a framebuffer object
+	glGenFramebuffers(1, &app->finalSceneBuffer.handle);
+	glBindFramebuffer(GL_FRAMEBUFFER, app->finalSceneBuffer.handle);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, app->finalSceneHandles.gAlbedoSpec, 0);
+
+	// Checking the status of a framebuffer object
+	// finally check if framebuffer is complete
+	GLenum framebufferStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (framebufferStatus != GL_FRAMEBUFFER_COMPLETE)
+	{
+		switch (framebufferStatus)
+		{
+		case GL_FRAMEBUFFER_UNDEFINED:                     ELOG("GL_FRAMEBUFFER_UNDEFINED"); break;
+		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:         ELOG("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT"); break;
+		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: ELOG("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT"); break;
+		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:        ELOG("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER"); break;
+		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:        ELOG("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER"); break;
+		case GL_FRAMEBUFFER_UNSUPPORTED:                   ELOG("GL_FRAMEBUFFER_UNSUPPORTED"); break;
+		case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:        ELOG("GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE"); break;
+		case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:      ELOG("GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS"); break;
+		default: ELOG("Unknown framebuffer status error");
+		}
+	}
+
+	// tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
+	unsigned int attachments[1] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, attachments);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void GenerateWaterReflectionFBO(App* app)
+{
+	// Framebuffer
+	// Creation and configuration of textures
+	// color + specular color buffer
+	glGenTextures(1, &app->waterReflectionHandles.gAlbedoSpec);
+	glBindTexture(GL_TEXTURE_2D, app->waterReflectionHandles.gAlbedoSpec);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, app->displaySize.x, app->displaySize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// depth buffer
+	glGenTextures(1, &app->waterReflectionHandles.gDepth);
+	glBindTexture(GL_TEXTURE_2D, app->waterReflectionHandles.gDepth);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, app->displaySize.x, app->displaySize.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// Creation and configuration of a framebuffer object
+	glGenFramebuffers(1, &app->waterReflectionBuffer.handle);
+	glBindFramebuffer(GL_FRAMEBUFFER, app->waterReflectionBuffer.handle);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, app->waterReflectionHandles.gAlbedoSpec, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, app->waterReflectionHandles.gDepth, 0);
+
+	// Checking the status of a framebuffer object
+	// finally check if framebuffer is complete
+	GLenum framebufferStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (framebufferStatus != GL_FRAMEBUFFER_COMPLETE)
+	{
+		switch (framebufferStatus)
+		{
+		case GL_FRAMEBUFFER_UNDEFINED:                     ELOG("GL_FRAMEBUFFER_UNDEFINED"); break;
+		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:         ELOG("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT"); break;
+		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: ELOG("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT"); break;
+		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:        ELOG("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER"); break;
+		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:        ELOG("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER"); break;
+		case GL_FRAMEBUFFER_UNSUPPORTED:                   ELOG("GL_FRAMEBUFFER_UNSUPPORTED"); break;
+		case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:        ELOG("GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE"); break;
+		case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:      ELOG("GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS"); break;
+		default: ELOG("Unknown framebuffer status error");
+		}
+	}
+
+	// tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
+	unsigned int attachments[1] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, attachments);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void GenerateWaterRefractionFBO(App* app)
+{
+	// Framebuffer
+	// Creation and configuration of textures
+	// color + specular color buffer
+	glGenTextures(1, &app->waterRefractionHandles.gAlbedoSpec);
+	glBindTexture(GL_TEXTURE_2D, app->waterRefractionHandles.gAlbedoSpec);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, app->displaySize.x, app->displaySize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// depth buffer
+	/*glGenRenderbuffers(1, &app->waterRefractionHandles.gDepth);
+	glBindRenderbuffer(GL_RENDERBUFFER, app->waterRefractionHandles.gDepth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, app->displaySize.x, app->displaySize.y);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);*/
+
+	// depth buffer
+	glGenTextures(1, &app->waterReflectionHandles.gDepth);
+	glBindTexture(GL_TEXTURE_2D, app->waterReflectionHandles.gDepth);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, app->displaySize.x, app->displaySize.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// Creation and configuration of a framebuffer object
+	glGenFramebuffers(1, &app->waterRefractionBuffer.handle);
+	glBindFramebuffer(GL_FRAMEBUFFER, app->waterRefractionBuffer.handle);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, app->waterRefractionHandles.gAlbedoSpec, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, app->waterRefractionHandles.gDepth);
+
+	// Checking the status of a framebuffer object
+	// finally check if framebuffer is complete
+	GLenum framebufferStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (framebufferStatus != GL_FRAMEBUFFER_COMPLETE)
+	{
+		switch (framebufferStatus)
+		{
+		case GL_FRAMEBUFFER_UNDEFINED:                     ELOG("GL_FRAMEBUFFER_UNDEFINED"); break;
+		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:         ELOG("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT"); break;
+		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: ELOG("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT"); break;
+		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:        ELOG("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER"); break;
+		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:        ELOG("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER"); break;
+		case GL_FRAMEBUFFER_UNSUPPORTED:                   ELOG("GL_FRAMEBUFFER_UNSUPPORTED"); break;
+		case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:        ELOG("GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE"); break;
+		case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:      ELOG("GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS"); break;
+		default: ELOG("Unknown framebuffer status error");
+		}
+	}
+
+	// tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
+	unsigned int attachments[1] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, attachments);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void GenerateWaterBuffers(App* app)
+{
+	GenerateWaterReflectionFBO(app);
+	GenerateWaterRefractionFBO(app);
+}
 
 // Creation of textures and framebuffer object
 // configure g-buffer framebuffer
@@ -580,6 +750,8 @@ void GenerateFramebuffer(App* app)
 	GenerateDeferredFBO(app);
 	GenerateLightFBO(app);
 	GeneratePingPongFBO(app);
+	GenerateFinalSceneFBO(app);
+	GenerateWaterBuffers(app);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -648,13 +820,13 @@ void CreateLightSource(App* app, Light light)
 	switch (light.type)
 	{
 	case LightType_Directional:
-		CreateEntity(app, LightSource(app->lights.size(), app->modelIndexes["cube"], app->modelIndexes["light source"], light.position, vec3(0.0f), vec3(0.025f)));
+		CreateEntity(app, LightSource(app->lights.size(), app->modelIndexes["cube"], app->programIndexes["light source"], light.position, vec3(0.0f), vec3(0.025f)));
 		break;
 	case LightType_Point:
-		CreateEntity(app, LightSource(app->lights.size(), app->modelIndexes["sphere"], app->modelIndexes["light source"], light.position, vec3(0.0f), vec3(0.025f)));
+		CreateEntity(app, LightSource(app->lights.size(), app->modelIndexes["sphere"], app->programIndexes["light source"], light.position, vec3(0.0f), vec3(0.025f)));
 		break;
 	case LightType_Spot:
-		CreateEntity(app, LightSource(app->lights.size(), app->modelIndexes["sphere"], app->modelIndexes["light source"], light.position, vec3(0.0f), vec3(0.025f)));
+		CreateEntity(app, LightSource(app->lights.size(), app->modelIndexes["sphere"], app->programIndexes["light source"], light.position, vec3(0.0f), vec3(0.025f)));
 		break;
 	case LightType_Flash:
 		break;
@@ -747,24 +919,6 @@ void Init(App* app)
 	u32 lightSourceProgramIdx = LoadProgram(app, "light_source.glsl", "LIGHT_SOURCE");
 	app->programIndexes.insert(std::make_pair("light source", lightSourceProgramIdx));
 
-	// Gaussian Blur programs
-	u32 gaussianBlurProgramIdx = LoadProgram(app, "gaussian_blur.glsl", "GAUSSIAN_BLUR");
-	app->programIndexes.insert(std::make_pair("gaussian blur", gaussianBlurProgramIdx));
-	Program& gaussianShadingProgram = app->programs[gaussianBlurProgramIdx];
-	glUseProgram(gaussianShadingProgram.handle);
-	glUniform1i(glGetUniformLocation(gaussianShadingProgram.handle, "image"), 0);
-	glUseProgram(0);
-
-
-	// Bloom programs
-	u32 bloomProgramIdx = LoadProgram(app, "bloom_shader.glsl", "FINAL_BLOOM");
-	app->programIndexes.insert(std::make_pair("bloom", bloomProgramIdx));
-	Program& bloomShadingProgram = app->programs[bloomProgramIdx];
-	glUseProgram(bloomShadingProgram.handle);
-	glUniform1i(glGetUniformLocation(bloomShadingProgram.handle, "scene"), 0);
-	glUniform1i(glGetUniformLocation(bloomShadingProgram.handle, "bloomBlur"), 1);
-	glUseProgram(0);
-
 	// Deferred Shading programs
 	u32 gBufferProgramIdx = LoadProgram(app, "g_buffer.glsl", "G_BUFFER");
 	app->programIndexes.insert(std::make_pair("g buffer", gBufferProgramIdx));
@@ -781,11 +935,56 @@ void Init(App* app)
 	glUniform1i(glGetUniformLocation(deferredShadingProgram.handle, "gAlbedoSpec"), 2);
 	glUseProgram(0);
 
+	// Gaussian Blur program
+	u32 gaussianBlurProgramIdx = LoadProgram(app, "gaussian_blur.glsl", "GAUSSIAN_BLUR");
+	app->programIndexes.insert(std::make_pair("gaussian blur", gaussianBlurProgramIdx));
+	Program& gaussianShadingProgram = app->programs[gaussianBlurProgramIdx];
+	glUseProgram(gaussianShadingProgram.handle);
+	glUniform1i(glGetUniformLocation(gaussianShadingProgram.handle, "image"), 0);
+	glUseProgram(0);
+
+	// Bloom program
+	u32 bloomShadingProgramIdx = LoadProgram(app, "bloom_shader.glsl", "FINAL_BLOOM");
+	app->programIndexes.insert(std::make_pair("bloom", bloomShadingProgramIdx));
+	Program& bloomShadingProgram = app->programs[bloomShadingProgramIdx];
+	glUseProgram(bloomShadingProgram.handle);
+	glUniform1i(glGetUniformLocation(bloomShadingProgram.handle, "scene"), 0);
+	glUniform1i(glGetUniformLocation(bloomShadingProgram.handle, "bloomBlur"), 1);
+	glUseProgram(0);
+
+	// Final scene program
+	u32 finalSceneProgramIdx = LoadProgram(app, "final_scene.glsl", "FINAL_SCENE");
+	app->programIndexes.insert(std::make_pair("final scene", finalSceneProgramIdx));
+	Program& finalSceneProgram = app->programs[finalSceneProgramIdx];
+	glUseProgram(finalSceneProgram.handle);
+	glUniform1i(glGetUniformLocation(finalSceneProgram.handle, "finalScene"), 0);
+	glUseProgram(0);
+
+	// Reflection program --> TODO: CHANGE NAME TO 'INVERT'
+	u32 reflectionProgramIdx = LoadProgram(app, "reflection.glsl", "REFLECTION");
+	app->programIndexes.insert(std::make_pair("reflection", reflectionProgramIdx));
+	Program& reflectionProgram = app->programs[reflectionProgramIdx];
+	glUseProgram(reflectionProgram.handle);
+	glUniform1i(glGetUniformLocation(reflectionProgram.handle, "scene"), 0);
+	glUseProgram(0);
+
+	// Water program
+	u32 waterProgramIdx = LoadProgram(app, "water.glsl", "WATER");
+	app->programIndexes.insert(std::make_pair("water", waterProgramIdx));
+	Program& waterProgram = app->programs[waterProgramIdx];
+	glUseProgram(waterProgram.handle);
+	glUniform1i(glGetUniformLocation(waterProgram.handle, "reflectionTexture"), 0);
+	glUniform1i(glGetUniformLocation(waterProgram.handle, "refractionTexture"), 1);
+	glUniform1i(glGetUniformLocation(waterProgram.handle, "dudvMap"), 2);
+	glUseProgram(0);
+
 	app->diceTexIdx = LoadTexture2D(app, "dice.png");
 	app->whiteTexIdx = LoadTexture2D(app, "color_white.png");
 	app->blackTexIdx = LoadTexture2D(app, "color_black.png");
 	app->normalTexIdx = LoadTexture2D(app, "color_normal.png");
 	app->magentaTexIdx = LoadTexture2D(app, "color_magenta.png");
+
+	app->waterDUDV = LoadTexture2D(app, "waterDUDV.png");
 
 	Material sciFiWallMaterial;
 	sciFiWallMaterial.albedoTextureIdx = LoadTexture2D(app, "Materials/Sci-fi_Wall_011_SD/Sci-fi_Wall_011_basecolor.jpg");
@@ -810,11 +1009,10 @@ void Init(App* app)
 	u32 sphereModelIndex = LoadModel(app, "Primitives/sphere.obj");
 	app->modelIndexes.insert(std::make_pair("sphere", sphereModelIndex));
 
+	u32 planeModelIndex = LoadModel(app, "Primitives/plane.obj");
+	app->modelIndexes.insert(std::make_pair("plane", planeModelIndex));
+
 	// Scene setup
-	//CreateEntity(app, TexturedMesh(app->modelIndexes["patrick"], app->programIndexes["shaders"], vec3(0.0f, 0.0f, 0.0f)));
-	//CreateEntity(app, TexturedMesh(app->modelIndexes["patrick"], app->programIndexes["shaders"], vec3(-5.0f, 0.0f, -5.0f)));
-	//CreateEntity(app, TexturedMesh(app->modelIndexes["patrick"], app->programIndexes["shaders"], vec3(5.0f, 0.0f, -5.0f)));
-	//CreateEntity(app, TexturedMesh(app->modelIndexes["backpack"], app->programIndexes["shaders2"], vec3(0.0f, 0.0f, 2.5f)));
 	CreateEntity(app, TexturedMesh(app->modelIndexes["backpack"], app->programIndexes["g buffer"], vec3(-5.0f, 0.0f, -5.0f)));
 	CreateEntity(app, TexturedMesh(app->modelIndexes["backpack"], app->programIndexes["g buffer"], vec3(0.0f, 0.0f, -5.0f)));
 	CreateEntity(app, TexturedMesh(app->modelIndexes["backpack"], app->programIndexes["g buffer"], vec3(5.0f, 0.0f, -5.0f)));
@@ -824,12 +1022,13 @@ void Init(App* app)
 	CreateEntity(app, TexturedMesh(app->modelIndexes["backpack"], app->programIndexes["g buffer"], vec3(-5.0f, 0.0f, 5.0f)));
 	CreateEntity(app, TexturedMesh(app->modelIndexes["backpack"], app->programIndexes["g buffer"], vec3(0.0f, 0.0f, 5.0f)));
 	CreateEntity(app, TexturedMesh(app->modelIndexes["backpack"], app->programIndexes["g buffer"], vec3(5.0f, 0.0f, 5.0f)));
-	//CreateEntity(app, Primitive(app->materialIndexes["sci-fi wall"], app->modelIndexes["sphere"], app->programIndexes["shaders3"], vec3(2.5f), vec3(0.0f), vec3(0.125f)));
+
+	app->waterPlane = Primitive(app->materialIndexes["white plastic"], app->modelIndexes["plane"], app->programIndexes["water"], vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f), vec3(1.0f));
+	CreateEntity(app, app->waterPlane);
 
 	CreateLightSource(app, Light(LightType_Directional, vec3(1.0f), vec3(1.0f), vec3(-5.0f), vec3(0.2f), vec3(1.0f, 0.65f, 0.0f), vec3(1.0f)));
 	CreateLightSource(app, Light(LightType_Point, vec3(50.0f, 32.5f, 0.0f), vec3(1.0f), vec3(0.0f, 5.0f, 0.0f), vec3(0.2f), vec3(50.0f, 25.0f, 0.0f), vec3(1.0f)));
 	CreateLightSource(app, Light(LightType_Flash, vec3(1.0f), vec3(0.0f), vec3(0.0f), vec3(0.2f), vec3(1.0f), vec3(1.0f)));
-
 }
 
 void Gui(App* app)
@@ -1017,6 +1216,178 @@ void Update(App* app)
 
 	glUnmapBuffer(GL_UNIFORM_BUFFER);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+	app->moveFactor += 0.03f * app->deltaTime;
+	app->moveFactor = std::fmod(app->moveFactor, 1.0f);
+}
+
+void RenderScene(App* app)
+{
+	for (u16 i = 0; i < app->entities.size(); ++i)
+	{
+		Entity entity = app->entities.at(i);
+
+		switch (entity.type)
+		{
+		case EntityType_Model:
+		{
+			// Binding buffer ranges to uniform blocks
+			glBindBufferRange(GL_UNIFORM_BUFFER, BINDING(1), app->cbuffer.handle, entity.localParamsOffset, entity.localParamsSize);
+
+			Program& gBufferProgram = app->programs[entity.programIndex];
+			glUseProgram(gBufferProgram.handle);
+
+			Model& model = app->models[entity.modelIndex];
+			Mesh& mesh = app->meshes[model.meshIdx];
+
+			for (u32 i = 0; i < mesh.submeshes.size(); ++i)
+			{
+				GLuint vao = FindVAO(mesh, i, gBufferProgram);
+				glBindVertexArray(vao);
+
+				u32 submeshMaterialIdx = model.materialIdx[i];
+				Material& submeshMaterial = app->materials[submeshMaterialIdx];
+
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, app->textures[submeshMaterial.albedoTextureIdx].handle);
+				glUniform1i(gBufferProgram.programUniformTexture, 0);
+
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_2D, app->textures[submeshMaterial.specularTextureIdx].handle);
+				glUniform1i(gBufferProgram.programUniformSpecularMap, 1);
+
+				//glUniform1f(glGetUniformLocation(texturedMeshProgram.handle, "uMaterial.shininess"), submeshMaterial.shininess);
+				glUniform4f(glGetUniformLocation(gBufferProgram.handle, "plane"), app->clipPlane.x, app->clipPlane.y, app->clipPlane.z, app->clipPlane.w);
+
+				Submesh& submesh = mesh.submeshes[i];
+				glDrawElements(GL_TRIANGLES, submesh.indices.size(), GL_UNSIGNED_INT, (void*)(u64)submesh.indexOffset);
+			}
+		}
+		break;
+		default:
+			break;
+		}
+	}
+}
+
+void GetFinalSceneColor(App* app)
+{
+	/*glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);*/
+
+	// Enable depth test
+	glEnable(GL_DEPTH_TEST);
+
+	// Bind the buffer range with the global parameters (camera position, lights...) to the GlobalParams block in the shader
+	glBindBufferRange(GL_UNIFORM_BUFFER, BINDING(0), app->cbuffer.handle, app->globalParamsOffset, app->globalParamsSize);
+
+	// 1. geometry pass: render scene's geometry/color data into gbuffer
+
+	// Render on this framebuffer render targets
+	glBindFramebuffer(GL_FRAMEBUFFER, app->gBuffer.handle);
+
+	// Select on which render targets to draw
+	// Already done at Init, in the CreateFramebuffer method, but it may be changed depending on the shader.
+	/*GLuint drawBuffers[] = { app->framebufferHandles.gAlbedoSpec };
+	glDrawBuffers(ARRAY_COUNT(drawBuffers), drawBuffers);*/
+
+	// Clear color and depth (only if required)
+	//glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Render code loops
+	// - Bind programs
+	// - Bind buffers
+	// - Set states
+	// - Draw calls
+	RenderScene(app);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	// 2. lighting pass: calculate lighting by iterating over a screen filled quad pixel-by-pixel using the gbuffer's content.
+	// Render on screen again (using the rendered texture)
+	glDisable(GL_DEPTH_TEST); // Since we are rendering a texture on a plane, we don't need to calculate the depth test
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, app->framebufferHandles.gPosition);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, app->framebufferHandles.gNormal);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, app->framebufferHandles.gAlbedoSpec);
+	glBindFramebuffer(GL_FRAMEBUFFER, app->deferredBuffer.handle);
+	Program& deferredShadingProgram = app->programs[app->programIndexes["deferred shading"]];
+	glUseProgram(deferredShadingProgram.handle);
+	glUniform1ui(glGetUniformLocation(deferredShadingProgram.handle, "renderMode"), app->renderMode);
+	// send light relevant uniforms -> (already done in update)
+	// finally render quad
+	RenderQuad(app);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	// 3. gaussian blur pass.
+	Program& gaussianBlurProgram = app->programs[app->programIndexes["gaussian blur"]];
+	glUseProgram(gaussianBlurProgram.handle);
+	bool horizontal = true, first_iteration = true;
+	int amount = 10; // How many times do we want to apply the gaussian blur (amount/2 horizontal and amount/2 vertical)
+	for (unsigned int i = 0; i < amount; ++i)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, app->pingPongBuffer.handle[horizontal]);
+		glUniform1i(glGetUniformLocation(gaussianBlurProgram.handle, "horizontal"), horizontal);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, first_iteration ? app->deferredHandles.colorBuffer[1] : app->pingPongHandles.colorBuffer[!horizontal]);
+		RenderQuad(app);
+		horizontal = !horizontal;
+		if (first_iteration)
+			first_iteration = false;
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	// 4. final bloom pass
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glBindFramebuffer(GL_FRAMEBUFFER, app->finalSceneBuffer.handle);
+	Program& bloomProgram = app->programs[app->programIndexes["bloom"]];
+	glUseProgram(bloomProgram.handle);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, app->deferredHandles.colorBuffer[0]);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, app->pingPongHandles.colorBuffer[!horizontal]);
+	glUniform1f(glGetUniformLocation(bloomProgram.handle, "exposure"), 1);
+	RenderQuad(app);
+
+	// 5. render lights on top of scene
+	// now render all light entities with forward rendering as we'd normally do
+	glEnable(GL_DEPTH_TEST);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, app->gBuffer.handle);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, app->finalSceneBuffer.handle); // write to final scene framebuffer
+	glBlitFramebuffer(0, 0, app->displaySize.x, app->displaySize.y, 0, 0, app->displaySize.x, app->displaySize.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	glBindFramebuffer(GL_FRAMEBUFFER, app->finalSceneBuffer.handle);
+	u32 lightIndex = 0;
+	for (u16 i = 0; i < app->entities.size(); ++i)
+	{
+		Entity entity = app->entities.at(i);
+
+		if (entity.type == EntityType_LightSource)
+		{
+			// Binding buffer ranges to uniform blocks
+			glBindBufferRange(GL_UNIFORM_BUFFER, BINDING(1), app->cbuffer.handle, entity.localParamsOffset, entity.localParamsSize);
+
+			Program& lightSourceProgram = app->programs[app->programIndexes["light source"]];
+			glUseProgram(lightSourceProgram.handle);
+
+			Model& model = app->models[entity.modelIndex];
+			Mesh& mesh = app->meshes[model.meshIdx];
+
+			for (u32 i = 0; i < mesh.submeshes.size(); ++i)
+			{
+				GLuint vao = FindVAO(mesh, i, lightSourceProgram);
+				glBindVertexArray(vao);
+
+				glUniform3fv(glGetUniformLocation(lightSourceProgram.handle, "uLightColor"), 1, glm::value_ptr(app->lights[lightIndex].color));
+				Submesh& submesh = mesh.submeshes[i];
+				glDrawElements(GL_TRIANGLES, submesh.indices.size(), GL_UNSIGNED_INT, (void*)(u64)submesh.indexOffset);
+			}
+
+			++lightIndex;
+		}
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Render(App* app)
@@ -1179,175 +1550,108 @@ void Render(App* app)
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// Enable depth test
+		float waterPlaneHeight = 1.0f;
+		float distance = 2 * (app->camera.position.y - waterPlaneHeight);
+
+		app->camera.position.y -= distance;
+		app->camera.ChangePitch(-app->camera.pitch);
+
+		glEnable(GL_CLIP_DISTANCE0);
 		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LESS);
-		glDepthMask(GL_TRUE);
-		// Bind the buffer range with the global parameters (camera position, lights...) to the GlobalParams block in the shader
-		glBindBufferRange(GL_UNIFORM_BUFFER, BINDING(0), app->cbuffer.handle, app->globalParamsOffset, app->globalParamsSize);
+		// Render reflection texture
+		app->clipPlane = vec4(0.0, 1.0, 0.0, -waterPlaneHeight);
+		GetFinalSceneColor(app);
+		glDisable(GL_DEPTH_TEST); // Since we are rendering the image (texture) on a plane, we don't need the depth test.
+		glDisable(GL_CLIP_DISTANCE0);
 
-		// 1. geometry pass: render scene's geometry/color data into gbuffer
+		app->camera.position.y += distance;
+		app->camera.ChangePitch(-app->camera.pitch);
 
-		// Render on this framebuffer render targets
-		glBindFramebuffer(GL_FRAMEBUFFER, app->gBuffer.handle);
+		glBindFramebuffer(GL_FRAMEBUFFER, app->waterReflectionBuffer.handle);
+		Program& finalSceneProgram = app->programs[app->programIndexes["final scene"]];
+		glUseProgram(finalSceneProgram.handle);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, app->finalSceneHandles.gAlbedoSpec);
+		RenderQuad(app);
 
-		// Select on which render targets to draw
-		// Already done at Init, in the CreateFramebuffer method, but it may be changed depending on the shader.
-		/*GLuint drawBuffers[] = { app->framebufferHandles.gAlbedoSpec };
-		glDrawBuffers(ARRAY_COUNT(drawBuffers), drawBuffers);*/
+		/*glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		Program& finalSceneProgram = app->programs[app->programIndexes["final scene"]];
+		glUseProgram(finalSceneProgram.handle);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, app->waterReflectionHandles.gAlbedoSpec);
+		RenderQuad(app);*/
 
-		// Clear color and depth (only if required)
-		//glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glEnable(GL_CLIP_DISTANCE0);
+		glEnable(GL_DEPTH_TEST);
+		// Render refraction texture
+		app->clipPlane = vec4(0.0, -1.0, 0.0, waterPlaneHeight);
+		GetFinalSceneColor(app);
+		glDisable(GL_DEPTH_TEST); // Since we are rendering the image (texture) on a plane, we don't need the depth test.
+		glDisable(GL_CLIP_DISTANCE0);
 
-		// Render code loops
-		// - Bind programs
-		// - Bind buffers
-		// - Set states
-		// - Draw calls
+		glBindFramebuffer(GL_FRAMEBUFFER, app->waterRefractionBuffer.handle);
+		glUseProgram(finalSceneProgram.handle);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, app->finalSceneHandles.gAlbedoSpec);
+		RenderQuad(app);
+
+		/*glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		Program& finalSceneProgram = app->programs[app->programIndexes["final scene"]];
+		glUseProgram(finalSceneProgram.handle);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, app->waterRefractionHandles.gAlbedoSpec);
+		RenderQuad(app);*/
+
+		glEnable(GL_DEPTH_TEST);
+		// Render final scene
+		/*app->clipPlane = vec4(0.0, -1.0, 0.0, 100.0);
+		GetFinalSceneColor(app);
+		glDisable(GL_DEPTH_TEST);*/
+
+		/*Program& finalSceneProgram = app->programs[app->programIndexes["final scene"]];
+		glUseProgram(finalSceneProgram.handle);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, app->finalSceneHandles.gAlbedoSpec);
+		RenderQuad(app);*/
+
+		// Render final water plane
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		Program& waterProgram = app->programs[app->programIndexes["water"]];
+		glUseProgram(waterProgram.handle);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, app->waterReflectionHandles.gAlbedoSpec);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, app->waterRefractionHandles.gAlbedoSpec);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, app->textures[app->waterDUDV].handle);
+		glUniform1f(glGetUniformLocation(waterProgram.handle, "moveFactor"), app->moveFactor);
+
+		// Render water planes
 		for (u16 i = 0; i < app->entities.size(); ++i)
 		{
 			Entity entity = app->entities.at(i);
 
-			if (entity.type == EntityType_Model)
+			if (entity.type == EntityType_Primitive && entity.programIndex == app->programIndexes["water"])
 			{
 				// Binding buffer ranges to uniform blocks
 				glBindBufferRange(GL_UNIFORM_BUFFER, BINDING(1), app->cbuffer.handle, entity.localParamsOffset, entity.localParamsSize);
-
-				Program& gBufferProgram = app->programs[entity.programIndex];
-				glUseProgram(gBufferProgram.handle);
 
 				Model& model = app->models[entity.modelIndex];
 				Mesh& mesh = app->meshes[model.meshIdx];
 
 				for (u32 i = 0; i < mesh.submeshes.size(); ++i)
 				{
-					GLuint vao = FindVAO(mesh, i, gBufferProgram);
+					GLuint vao = FindVAO(mesh, i, waterProgram);
 					glBindVertexArray(vao);
 
 					u32 submeshMaterialIdx = model.materialIdx[i];
 					Material& submeshMaterial = app->materials[submeshMaterialIdx];
 
-					glActiveTexture(GL_TEXTURE0);
-					glBindTexture(GL_TEXTURE_2D, app->textures[submeshMaterial.albedoTextureIdx].handle);
-					glUniform1i(gBufferProgram.programUniformTexture, 0);
-
-					glActiveTexture(GL_TEXTURE1);
-					glBindTexture(GL_TEXTURE_2D, app->textures[submeshMaterial.specularTextureIdx].handle);
-					glUniform1i(gBufferProgram.programUniformSpecularMap, 1);
-
-					//glUniform1f(glGetUniformLocation(texturedMeshProgram.handle, "uMaterial.shininess"), submeshMaterial.shininess);
-
 					Submesh& submesh = mesh.submeshes[i];
 					glDrawElements(GL_TRIANGLES, submesh.indices.size(), GL_UNSIGNED_INT, (void*)(u64)submesh.indexOffset);
 				}
 			}
 		}
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-
-
-
-		// 2. lighting pass: calculate lighting by iterating over a screen filled quad pixel-by-pixel using the gbuffer's content.
-		// Render on screen again (using the rendered texture)
-		glDisable(GL_DEPTH_TEST); // Since we are rendering a texture on a plane, we don't need to calculate the depth test
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, app->framebufferHandles.gPosition);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, app->framebufferHandles.gNormal);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, app->framebufferHandles.gAlbedoSpec);
-		glBindFramebuffer(GL_FRAMEBUFFER, app->deferredBuffer.handle);
-		Program& deferredShadingProgram = app->programs[app->programIndexes["deferred shading"]];
-		glUseProgram(deferredShadingProgram.handle);
-		glUniform1ui(glGetUniformLocation(deferredShadingProgram.handle, "renderMode"), app->renderMode);
-		// send light relevant uniforms -> (already done in update)
-		// finally render quad
-		RenderQuad(app);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-		
-
-		// 4. gaussian blur pass.
-		Program& gaussianBlurProgram = app->programs[app->programIndexes["gaussian blur"]];
-		glUseProgram(gaussianBlurProgram.handle);
-		bool horizontal = true, first_iteration = true;
-		int amount = 10; //How many times do we want to apply the gaussian blur (amount/2 horizontal and amount/2 vertical)
-		for (unsigned int i = 0; i < amount; ++i)
-		{
-			glBindFramebuffer(GL_FRAMEBUFFER, app->pingPongBuffer.handle[horizontal]);
-			glUniform1i(glGetUniformLocation(gaussianBlurProgram.handle, "horizontal"), horizontal);
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, first_iteration ? app->deferredHandles.colorBuffer[1] : app->pingPongHandles.colorBuffer[!horizontal]);
-			RenderQuad(app);
-			horizontal = !horizontal;
-			if (first_iteration)
-				first_iteration = false;
-		}
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-
-		//5. final bloom pass
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		Program& bloomProgram = app->programs[app->programIndexes["bloom"]];
-		glUseProgram(bloomProgram.handle);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, app->deferredHandles.colorBuffer[0]);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, app->pingPongHandles.colorBuffer[!horizontal]);
-
-		glUniform1f(glGetUniformLocation(bloomProgram.handle, "exposure"), 1);
-
-		RenderQuad(app);
-
-		//3. render lights on top of scene
-		// now render all light entitiesaa with forward rendering as we'd normally do
-		glEnable(GL_DEPTH_TEST);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // write to default framebuffer
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, app->gBuffer.handle);
-		glBlitFramebuffer(0, 0, app->displaySize.x, app->displaySize.y, 0, 0, app->displaySize.x, app->displaySize.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-
-
-
-		glDepthMask(GL_FALSE);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		u32 lightIndex = 0;
-		for (u16 i = 0; i < app->entities.size(); ++i)
-		{
-			Entity entity = app->entities.at(i);
-
-			if (entity.type == EntityType_LightSource)
-			{
-				// Binding buffer ranges to uniform blocks
-				glBindBufferRange(GL_UNIFORM_BUFFER, BINDING(1), app->cbuffer.handle, entity.localParamsOffset, entity.localParamsSize);
-
-				Program& lightSourceProgram = app->programs[app->programIndexes["light source"]];
-				glUseProgram(lightSourceProgram.handle);
-
-				Model& model = app->models[entity.modelIndex];
-				Mesh& mesh = app->meshes[model.meshIdx];
-
-				for (u32 i = 0; i < mesh.submeshes.size(); ++i)
-				{
-					GLuint vao = FindVAO(mesh, i, lightSourceProgram);
-					glBindVertexArray(vao);
-
-					glUniform3fv(glGetUniformLocation(lightSourceProgram.handle, "uLightColor"), 1, glm::value_ptr(app->lights[lightIndex].color));
-					Submesh& submesh = mesh.submeshes[i];
-					glDrawElements(GL_TRIANGLES, submesh.indices.size(), GL_UNSIGNED_INT, (void*)(u64)submesh.indexOffset);
-				}
-
-				++lightIndex;
-			}
-		}
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glDepthMask(GL_TRUE);
-
-
-
 	}
 	break;
 	default:;
