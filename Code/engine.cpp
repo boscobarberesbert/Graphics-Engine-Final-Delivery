@@ -1082,7 +1082,7 @@ void Gui(App* app)
 		// Show Effects Menu
 		if (ImGui::BeginMenu("Effects"))
 		{
-			if (ImGui::Checkbox("mycheckbox", &app->activateWaterShader))
+			if (ImGui::Checkbox("Switch To Water Plane Scene", &app->activateWaterShader))
 			{
 				if (app->activateWaterShader) {
 					app->mode = Mode_Water;
