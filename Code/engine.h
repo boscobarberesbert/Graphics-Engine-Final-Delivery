@@ -84,7 +84,8 @@ enum Mode
     Mode_TexturedQuad,
     Mode_Count,
     Mode_TexturedMesh,
-    Mode_Deferred
+    Mode_Deferred,
+    Mode_Water,
 };
 
 struct OpenGLInfo
@@ -478,6 +479,7 @@ struct App
     Entity waterPlane;
     u32 waterDUDV;
     float moveFactor = 0.0f;
+    bool activateWaterShader = false;
 };
 
 void Init(App* app);
